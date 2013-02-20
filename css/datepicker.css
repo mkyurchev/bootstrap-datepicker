@@ -2,7 +2,7 @@
  * Datepicker for Bootstrap
  *
  * Copyright 2012 Stefan Petre
- * Improvements by Andrew Rowls
+ * Improvements by Andrew Rowls and Miroslav Kyurchev
  * Licensed under the Apache License v2.0
  * http://www.apache.org/licenses/LICENSE-2.0
  *
@@ -86,7 +86,9 @@
   cursor: pointer;
 }
 .datepicker table tr td.old,
-.datepicker table tr td.new {
+.datepicker table tr td.new,
+.datepicker table tr td.old a,
+.datepicker table tr td.new a {
   color: #999999;
 }
 .datepicker table tr td.disabled,
