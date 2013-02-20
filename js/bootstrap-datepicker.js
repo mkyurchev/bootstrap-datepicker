@@ -3,7 +3,7 @@
  * http://www.eyecon.ro/bootstrap-datepicker
  * =========================================================
  * Copyright 2012 Stefan Petre
- * Improvements by Andrew Rowls
+ * Improvements by Andrew Rowls and Miroslav Kyurchev
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,13 +55,14 @@
 			this.forceParse = this.element.data('date-force-parse');
 		}
 
+		this.picker = $(options.template || DPGlobal.template).appendTo(this.isInline ? this.element : 'body');
 
-		this.picker = $(DPGlobal.template)
-							.appendTo(this.isInline ? this.element : 'body')
-							.on({
-								click: $.proxy(this.click, this),
-								mousedown: $.proxy(this.mousedown, this)
-							});
+		if (!options.disablePickerEvents) {
+			this.picker.on({
+				click: $.proxy(this.click, this),
+				mousedown: $.proxy(this.mousedown, this)
+			});
+		}
 
 		if(this.isInline) {
 			this.picker.addClass('datepicker-inline');
@@ -123,8 +124,12 @@
 
 		this.viewMode = this.startViewMode = Math.max(this.startViewMode, this.minViewMode);
 
+		this.headPicker = (options.headPicker==false) ? false : true;
 		this.todayBtn = (options.todayBtn||this.element.data('date-today-btn')||false);
 		this.todayHighlight = (options.todayHighlight||this.element.data('date-today-highlight')||false);
+		this.dayHighlight = (options.dayHighlight==false||this.element.data('date-highlight')==false) ? false : true;
+
+		this.dayWrapper = options.dayWrapper || function (day) { return day };
 
 		this.calendarWeeks = false;
 		if ('calendarWeeks' in options) {
@@ -401,6 +406,8 @@
 			this.picker.find('tfoot th.today')
 						.text(dates[this.language].today)
 						.toggle(this.todayBtn !== false);
+			this.picker.find('thead tr.head-picker')
+						.toggle(this.headPicker !== false);
 			this.updateNavArrows();
 			this.fillMonths();
 			var prevMonth = UTCDate(year, month-1, 28,0,0,0,0),
@@ -444,14 +451,14 @@
 					prevMonth.getUTCDate() == today.getDate()) {
 					clsName += ' today';
 				}
-				if (currentDate && prevMonth.valueOf() == currentDate) {
+				if (this.dayHighlight && currentDate && prevMonth.valueOf() == currentDate) {
 					clsName += ' active';
 				}
 				if (prevMonth.valueOf() < this.startDate || prevMonth.valueOf() > this.endDate ||
 					$.inArray(prevMonth.getUTCDay(), this.daysOfWeekDisabled) !== -1) {
 					clsName += ' disabled';
 				}
-				html.push('<td class="day'+clsName+'">'+prevMonth.getUTCDate() + '</td>');
+				html.push('<td class="day'+clsName+'">'+this.dayWrapper(prevMonth.getUTCDate(), prevMonth.getUTCMonth(), prevMonth.getUTCFullYear())+'</td>');
 				if (prevMonth.getUTCDay() == this.weekEnd) {
 					html.push('</tr>');
 				}
@@ -979,8 +986,8 @@
 			}
 			return date.join('');
 		},
-		headTemplate: '<thead>'+
-							'<tr>'+
+		headTemplate:  '<thead>'+
+							'<tr class="head-picker">'+
 								'<th class="prev"><i class="icon-arrow-left"/></th>'+
 								'<th colspan="5" class="switch"></th>'+
 								'<th class="next"><i class="icon-arrow-right"/></th>'+
